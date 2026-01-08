@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { TenantStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTenantDto } from './dto/create-tenant.dto';
+import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
@@ -19,7 +18,7 @@ export class TenantsService {
           create: {
             email: dto.adminEmail,
             passwordHash,
-            role: UserRole.customer_admin,
+            role: 'customer_admin',
           },
         },
       },

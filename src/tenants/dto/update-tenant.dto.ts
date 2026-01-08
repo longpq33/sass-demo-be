@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { TenantStatus } from '@prisma/client';
+import { TenantStatus } from './create-tenant.dto';
 
 export class UpdateTenantDto {
   @IsOptional()

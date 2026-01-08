@@ -1,5 +1,15 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
-import { TenantStatus } from '@prisma/client';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+
+export enum TenantStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
 
 export class CreateTenantDto {
   @IsString()
@@ -13,5 +23,6 @@ export class CreateTenantDto {
   adminPassword: string;
 
   @IsOptional()
+  @IsEnum(TenantStatus)
   status?: TenantStatus;
 }
