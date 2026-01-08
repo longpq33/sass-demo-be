@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReadingDto } from './dto/create-reading.dto';
+import { UpdateReadingDto } from './dto/update-reading.dto';
 import { QueryReadingsDto } from './dto/query-readings.dto';
 
 type Role = 'system_admin' | 'customer_admin' | 'operator';
@@ -84,6 +85,71 @@ export class ReadingsService {
           },
         },
       },
+    });
+  }
+
+  private async assertReadingAccess(
+    readingId: string,
+    opts: { role: Role; tenantId: string | null },
+  ) {
+    const reading = await this.prisma.meterReading.findUnique({
+      where: { id: readingId },
+      include: {
+        meter: {
+          include: { site: true },
+        },
+      },
+    });
+    if (!reading) {
+      throw new NotFoundException('Reading not found');
+    }
+    if (
+      opts.role !== 'system_admin' &&
+      reading.meter.site.tenantId !== opts.tenantId
+    ) {
+      throw new NotFoundException('Reading not in tenant');
+    }
+    return reading;
+  }
+
+  async update(
+    id: string,
+    dto: UpdateReadingDto,
+    opts: { role: Role; tenantId: string | null },
+  ) {
+    await this.assertReadingAccess(id, opts);
+    const updateData: any = {};
+    if (dto.timestamp) {
+      updateData.timestamp = new Date(dto.timestamp);
+    }
+    if (dto.value !== undefined) {
+      updateData.value = dto.value;
+    }
+    return this.prisma.meterReading.update({
+      where: { id },
+      data: updateData,
+      include: {
+        meter: {
+          select: {
+            id: true,
+            name: true,
+            site: {
+              select: {
+                id: true,
+                name: true,
+                tenant: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async remove(id: string, opts: { role: Role; tenantId: string | null }) {
+    await this.assertReadingAccess(id, opts);
+    return this.prisma.meterReading.delete({
+      where: { id },
     });
   }
 }
