@@ -53,16 +53,17 @@ model User {
 }
 
 model Site {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  type      String?
-  address   String?
-  tenantId  String   @db.Uuid
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  meters    Meter[]
-  alerts    Alert[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String            @id @default(uuid()) @db.Uuid
+  name              String
+  type              String?
+  address           String?
+  tenantId          String            @db.Uuid
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  meters            Meter[]
+  alerts            Alert[]
+  predictiveAlerts  PredictiveAlert[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([tenantId])
 }
@@ -99,4 +100,22 @@ model Alert {
   message   String
   level     AlertLevel @default(warn)
   createdAt DateTime   @default(now())
+}
+
+model PredictiveAlert {
+  id            String     @id @default(uuid()) @db.Uuid
+  siteId        String     @db.Uuid
+  site          Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  message       String
+  level         AlertLevel @default(warn)
+  predictedDate DateTime   // Ngày dự đoán sẽ xảy ra
+  confidence    Float      // Độ tin cậy (0-100%)
+  trend         String     // "increasing", "decreasing", "stable"
+  expectedValue Float      // Giá trị dự đoán
+  createdAt     DateTime   @default(now())
+  expiresAt     DateTime   // Hết hạn sau khi predictedDate qua
+
+  @@index([siteId])
+  @@index([predictedDate])
+  @@index([expiresAt])
 }

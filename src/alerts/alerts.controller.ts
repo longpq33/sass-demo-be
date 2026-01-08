@@ -27,4 +27,21 @@ export class AlertsController {
       tenantId: user.tenantId,
     });
   }
+
+  @Get('predictive')
+  getPredictive(@CurrentUser() user: JwtPayload) {
+    return this.alertsService.listPredictive({
+      role: user.role,
+      tenantId: user.tenantId,
+    });
+  }
+
+  @Post('predictive/recompute')
+  @Roles('system_admin', 'customer_admin')
+  recomputePredictive(@CurrentUser() user: JwtPayload) {
+    return this.alertsService.generatePredictiveAlerts({
+      role: user.role,
+      tenantId: user.tenantId,
+    });
+  }
 }
