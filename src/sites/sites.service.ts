@@ -44,6 +44,8 @@ export class SitesService {
         name: dto.name,
         type: dto.type,
         address: dto.address,
+        latitude: dto.latitude !== undefined ? dto.latitude : null,
+        longitude: dto.longitude !== undefined ? dto.longitude : null,
         tenantId,
       },
       include: {
@@ -77,6 +79,27 @@ export class SitesService {
     });
   }
 
+  async findOne(id: string, opts: { role: Role; tenantId: string | null }) {
+    const site = await this.prisma.site.findUnique({
+      where: { id },
+      include: {
+        tenant: { select: { id: true, name: true } },
+        meters: { select: { id: true, name: true, type: true } },
+      },
+    });
+
+    if (!site) {
+      throw new NotFoundException('Site not found');
+    }
+
+    const tenantId = this.resolveTenantId(opts.role, opts.tenantId);
+    if (tenantId && site.tenantId !== tenantId) {
+      throw new NotFoundException('Site not in tenant');
+    }
+
+    return site;
+  }
+
   async update(
     id: string,
     dto: UpdateSiteDto,
@@ -90,9 +113,24 @@ export class SitesService {
     if (tenantId && existing.tenantId !== tenantId) {
       throw new NotFoundException('Site not in tenant');
     }
+
+    // Prepare update data, converting numbers to Decimal-compatible format
+    const updateData: any = {};
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.type !== undefined) updateData.type = dto.type;
+    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.latitude !== undefined) {
+      updateData.latitude =
+        dto.latitude !== null ? dto.latitude.toString() : null;
+    }
+    if (dto.longitude !== undefined) {
+      updateData.longitude =
+        dto.longitude !== null ? dto.longitude.toString() : null;
+    }
+
     return this.prisma.site.update({
       where: { id },
-      data: dto,
+      data: updateData,
       include: {
         tenant: { select: { id: true, name: true } },
         meters: { select: { id: true, name: true, type: true } },

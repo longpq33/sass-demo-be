@@ -57,6 +57,8 @@ model Site {
   name              String
   type              String?
   address           String?
+  latitude          Decimal?          @db.Decimal(10, 8)
+  longitude         Decimal?          @db.Decimal(11, 8)
   tenantId          String            @db.Uuid
   tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   meters            Meter[]

@@ -35,6 +35,14 @@ export class SitesController {
     });
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.sitesService.findOne(id, {
+      role: user.role,
+      tenantId: user.tenantId,
+    });
+  }
+
   @Post()
   @Roles('system_admin', 'customer_admin')
   create(@Body() dto: CreateSiteDto, @CurrentUser() user: JwtPayload) {
