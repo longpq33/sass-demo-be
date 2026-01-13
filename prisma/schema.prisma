@@ -29,6 +29,22 @@ enum AlertLevel {
   critical
 }
 
+enum ExternalSystemStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  PENDING
+}
+
+enum ExternalSystemType {
+  POWER_GRID
+  SCADA
+  EMS
+  DMS
+  AMI
+  OTHER
+}
+
 model Tenant {
   id        String        @id @default(uuid()) @db.Uuid
   name      String
@@ -64,6 +80,7 @@ model Site {
   meters            Meter[]
   alerts            Alert[]
   predictiveAlerts  PredictiveAlert[]
+  externalSystems   ExternalSystem[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -120,4 +137,24 @@ model PredictiveAlert {
   @@index([siteId])
   @@index([predictedDate])
   @@index([expiresAt])
+}
+
+model ExternalSystem {
+  id            String                 @id @default(uuid()) @db.Uuid
+  systemId      String                 @unique // MQTT system identifier (e.g., "digital-taiwin-001")
+  name          String
+  type          ExternalSystemType
+  siteId        String                 @db.Uuid
+  site          Site                    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  status        ExternalSystemStatus   @default(PENDING)
+  mqttUsername  String?
+  lastSeen      DateTime?
+  metadata      Json?                  // Additional configuration
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@index([systemId])
+  @@index([siteId])
+  @@index([status])
+  @@index([type])
 }

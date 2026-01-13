@@ -10,6 +10,9 @@ import { MetersModule } from './meters/meters.module';
 import { ReadingsModule } from './readings/readings.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MqttModule } from './mqtt/mqtt.module';
+import { PowerGridModule } from './power-grid/power-grid.module';
+import { ExternalSystemsModule } from './external-systems/external-systems.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ReadingsModule,
     AlertsModule,
     DashboardModule,
+    ExternalSystemsModule,
+    MqttModule,
+    PowerGridModule,
   ],
   controllers: [AppController],
   providers: [AppService],
